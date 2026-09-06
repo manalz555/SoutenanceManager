@@ -1,0 +1,43 @@
+body{
+    background-color: #0a2e5c;
+    margin: 0;
+}
+.body{
+    color: aliceblue;
+    text-align: center;
+    margin-top:10px ;
+}
+input{
+ border-radius:5px;
+ padding:9px;
+ margin:9px;
+ width: 400px;
+ height:20px;
+ 
+}
+label{
+    margin: 10px;
+    color:white;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+input:hover{
+    cursor: pointer;
+    background-color:white;
+    
+
+}
+.logo3{
+     
+    width: 100px;  
+
+}
+
+#cap{
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-weight:bolder;
+    font: size 50px;
+    text-align: center;
+    color: WHITE;
+    margin-bottom:9px;
+}
