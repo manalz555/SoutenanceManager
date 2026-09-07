@@ -1,169 +1,71 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planification des Soutenances - SoutenanceManager</title>
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
-</head>
-<body>
-    <!-- HEADER -->
-    <header class="header">
-        <div class="header-left">
-            <img src="{{ asset('icons/logo3.png') }}" alt="Logo" class="logo">
-            <h1>SoutenanceManager</h1>
-        </div>
-        <div class="user-info">
-            <div class="user-avatar">A</div>
-            <span>Administrateur ▼</span>
-        </div>
-    </header>
+@extends('layouts.admin')
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <nav>
-            <a href="{{ url('/admin/dashboard') }}">
-                <span class="icon">📊</span>
-                <span>Dashboard</span>
-            </a>
-            <a href="{{ url('/admin/etudiants') }}">
-                <span class="icon">👨‍🎓</span>
-                <span>Étudiants</span>
-            </a>
-            <a href="{{ url('/admin/professeurs') }}">
-                <span class="icon">👨‍🏫</span>
-                <span>Professeurs</span>
-            </a>
-            <a href="{{ url('/admin/assignations') }}">
-                <span class="icon">🔗</span>
-                <span>Assignations</span>
-            </a>
-            <a href="{{ url('/admin/validation') }}">
-                <span class="icon">✓</span>
-                <span>Validation Rapports</span>
-            </a>
-            <a href="{{ url('/admin/jury') }}">
-                <span class="icon">👥</span>
-                <span>Formation Jury</span>
-            </a>
-            <a href="{{ url('/admin/planification') }}" class="active">
-                <span class="icon">📅</span>
-                <span>Planification</span>
-            </a>
-            <a href="{{ url('/admin/planning') }}">
-                <span class="icon">📋</span>
-                <span>Planning Global</span>
-            </a>
-            <a href="{{ url('/logout') }}" class="logout-btn">
-                <span class="icon">🚪</span>
-                <span>Déconnexion</span>
-            </a>
-        </nav>
-    </aside>
+@section('title', 'Planifier une soutenance')
 
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
-        <h2 class="page-title">📅 Planification des Soutenances</h2>
+@section('content')
+    <h2 class="page-title">📅 Planifier une soutenance</h2>
 
-        <div class="alert alert-info">
-            <span>ℹ️</span>
-            <span>Planifiez les dates, heures et salles pour les soutenances. Le jury doit être complet.</span>
-        </div>
+    <div class="alert alert-info">
+        <span>ℹ️</span>
+        <span>Choisissez l'étudiant, la date, la salle, puis composez le jury : président, encadrant et rapporteur sont obligatoires, l'examinateur est optionnel.</span>
+    </div>
 
-        <!-- TABLE -->
-        <section class="section">
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Étudiant</th>
-                            <th>Jury</th>
-                            <th>Date</th>
-                            <th>Heure</th>
-                            <th>Salle</th>
-                            <th>Statut</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Ahmed Benali</strong></td>
-                            <td>4 membres ✓</td>
-                            <td>
-                                <input type="date" value="2025-01-28" style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                            </td>
-                            <td>
-                                <input type="time" value="10:00" style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                            </td>
-                            <td>
-                                <select style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                                    <option>B102</option>
-                                    <option>B103</option>
-                                    <option>A201</option>
-                                    <option>A202</option>
-                                </select>
-                            </td>
-                            <td><span class="badge badge-success">Planifiée</span></td>
-                            <td>
-                                <button class="btn btn-success btn-sm" onclick="savePlanning(1)">Enregistrer</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Fatima Alami</strong></td>
-                            <td>4 membres ✓</td>
-                            <td>
-                                <input type="date" value="2025-01-28" style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                            </td>
-                            <td>
-                                <input type="time" value="14:00" style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                            </td>
-                            <td>
-                                <select style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                                    <option>B103</option>
-                                    <option>B102</option>
-                                    <option>A201</option>
-                                </select>
-                            </td>
-                            <td><span class="badge badge-success">Planifiée</span></td>
-                            <td>
-                                <button class="btn btn-success btn-sm" onclick="savePlanning(2)">Enregistrer</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Youssef Idrissi</strong></td>
-                            <td>4 membres ✓</td>
-                            <td>
-                                <input type="date" style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                            </td>
-                            <td>
-                                <input type="time" style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                            </td>
-                            <td>
-                                <select style="padding: 8px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                                    <option value="">Sélectionner...</option>
-                                    <option>A201</option>
-                                    <option>A202</option>
-                                    <option>B102</option>
-                                </select>
-                            </td>
-                            <td><span class="badge badge-warning">À planifier</span></td>
-                            <td>
-                                <button class="btn btn-success btn-sm" onclick="savePlanning(3)">Enregistrer</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+    <section class="section">
+        @if ($students->isEmpty())
+            <p class="empty">Tous les étudiants ont déjà une soutenance planifiée.</p>
+        @else
+            <form method="POST" action="{{ route('admin.defenses.store') }}">
+                @csrf
+                <div class="form-group">
+                    <label for="etudiant_id">Étudiant *</label>
+                    <select id="etudiant_id" name="etudiant_id" required onchange="prefill(this)">
+                        <option value="">Sélectionner...</option>
+                        @foreach ($students as $s)
+                            <option value="{{ $s->id }}" data-encadrant="{{ $s->encadrant_id }}" data-rapporteur="{{ $s->rapporteur_id }}" @selected(old('etudiant_id') == $s->id)>
+                                {{ $s->full_name }} — {{ $s->filiere ?? 'filière non renseignée' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-    <script src="{{ asset('js/admin.js') }}"></script>
-    <script>
-        function savePlanning(id) {
-            alert('Planification enregistrée! L\'étudiant et le jury seront notifiés.');
-            // Ici vous enverriez la requête au backend
-        }
-    </script>
-</body>
-</html>
+                <div class="form-row">
+                    <div class="form-group"><label for="date">Date *</label><input type="date" id="date" name="date" value="{{ old('date') }}" required></div>
+                    <div class="form-group"><label for="heure">Heure *</label><input type="time" id="heure" name="heure" value="{{ old('heure', '10:00') }}" required></div>
+                    <div class="form-group"><label for="salle">Salle *</label><input type="text" id="salle" name="salle" value="{{ old('salle') }}" placeholder="B102" required></div>
+                </div>
 
+                <h3 class="section-title" style="margin-top: 20px;">👥 Composition du jury</h3>
+                <div class="form-row">
+                    @foreach (['president_id' => 'Président *', 'encadrant_id' => 'Encadrant *', 'rapporteur_id' => 'Rapporteur *', 'examinateur_id' => 'Examinateur'] as $field => $label)
+                        <div class="form-group">
+                            <label for="{{ $field }}">{{ $label }}</label>
+                            <select id="{{ $field }}" name="{{ $field }}" @required(str_ends_with($label, '*'))>
+                                <option value="">Sélectionner...</option>
+                                @foreach ($teachers as $t)
+                                    <option value="{{ $t->id }}" @selected(old($field) == $t->id)>{{ $t->full_name }} ({{ $t->role_libelle }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-top: 30px;">
+                    <button type="submit" class="btn btn-success">Enregistrer la soutenance</button>
+                    <a href="{{ route('admin.defenses') }}" class="btn btn-secondary">Annuler</a>
+                </div>
+            </form>
+        @endif
+    </section>
+@endsection
+
+@section('scripts')
+<script>
+    // Pré-remplit encadrant et rapporteur à partir des assignations de l'étudiant.
+    function prefill(select) {
+        const opt = select.selectedOptions[0];
+        if (!opt) return;
+        if (opt.dataset.encadrant) document.getElementById('encadrant_id').value = opt.dataset.encadrant;
+        if (opt.dataset.rapporteur) document.getElementById('rapporteur_id').value = opt.dataset.rapporteur;
+    }
+</script>
+@endsection

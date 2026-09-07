@@ -6,25 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('etudiant_id')->constrained('etudiants')->onDelete('cascade');
-            $table->enum('type', ['rapport', 'fichier_stage', 'autre']);
+            $table->foreignId('etudiant_id')->constrained('etudiants')->cascadeOnDelete();
+            // dossier_stage | rapport
+            $table->string('type')->default('rapport');
             $table->string('titre');
             $table->string('chemin_fichier');
             $table->string('nom_fichier_original');
-            $table->string('extension');
-            $table->float('taille_mo', 8, 2);
-            $table->enum('statut', ['soumis', 'en_attente', 'approuve', 'rejete'])->default('soumis');
+            $table->string('extension', 10);
+            $table->decimal('taille_mo', 8, 2)->default(0);
+            // soumis | valide | rejete
+            $table->string('statut')->default('soumis');
             $table->text('commentaire')->nullable();
             $table->boolean('est_version_corrigee')->default(false);
+            $table->dateTime('date_soumission')->nullable();
             $table->timestamps();
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('documents');
     }

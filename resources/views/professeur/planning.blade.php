@@ -1,131 +1,52 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning - SoutenanceManager</title>
-    <link rel="stylesheet" href="{{ asset('css/professeur.css') }}">
-</head>
-<body>
-    <!-- HEADER -->
-    <header class="header">
-        <div class="header-left">
-            <img src="{{ asset('icons/logo3.png') }}" alt="Logo" class="logo">
-            <h1>SoutenanceManager</h1>
-        </div>
-        <div class="user-info">
-            <div class="user-avatar">P</div>
-            <span>Prof. Alami ▼</span>
-        </div>
-    </header>
+@extends('layouts.professeur')
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <nav>
-            <a href="{{ url('/professeur/dashboard') }}">
-                <span class="icon">📊</span>
-                <span>Dashboard</span>
-            </a>
-            <a href="{{ url('/professeur/etudiants') }}">
-                <span class="icon">👨‍🎓</span>
-                <span>Mes Étudiants</span>
-            </a>
-            <a href="{{ url('/professeur/feedback') }}">
-                <span class="icon">💬</span>
-                <span>Feedback</span>
-            </a>
-            <a href="{{ url('/professeur/planning') }}" class="active">
-                <span class="icon">📅</span>
-                <span>Planning</span>
-            </a>
-            <a href="{{ url('/logout') }}" class="logout-btn">
-                <span class="icon">🚪</span>
-                <span>Déconnexion</span>
-            </a>
-        </nav>
-    </aside>
+@section('title', 'Planning des Soutenances')
 
-    <!-- MAIN CONTENT -->
-    <main class="main-content">
-        <h2 class="page-title">📅 Planning des Soutenances</h2>
+@section('content')
+    <h2 class="page-title">📅 Planning des soutenances &amp; notation</h2>
 
-        <div class="filters" style="margin-bottom: 25px;">
-            <button class="filter-btn active" onclick="filterByRole('all')">Tous mes rôles</button>
-            <button class="filter-btn" onclick="filterByRole('encadrant')">Encadrant</button>
-            <button class="filter-btn" onclick="filterByRole('rapporteur')">Rapporteur</button>
-            <button class="filter-btn" onclick="filterByRole('examinateur')">Examinateur</button>
-            <button class="filter-btn" onclick="filterByRole('president')">Président</button>
-        </div>
+    <div class="alert alert-info">
+        <span>ℹ️</span>
+        <span>Vous pouvez saisir votre note dès que la soutenance a eu lieu. La note finale est calculée automatiquement quand tous les membres du jury ont noté.</span>
+    </div>
 
-        <!-- TABLE -->
-        <section class="section">
-            <div class="table-container">
-                <table>
-                    <thead>
+    <section class="section">
+        <div class="table-container">
+            <table>
+                <thead><tr><th>Date</th><th>Heure</th><th>Salle</th><th>Étudiant</th><th>Mon rôle</th><th>Jury</th><th>Statut</th><th>Ma note</th></tr></thead>
+                <tbody>
+                    @forelse ($soutenances as $s)
                         <tr>
-                            <th>Date</th>
-                            <th>Heure</th>
-                            <th>Salle</th>
-                            <th>Étudiant</th>
-                            <th>Mon rôle</th>
-                            <th>Jury</th>
+                            <td><strong>{{ $s->Date_Sout->format('d/m/Y') }}</strong></td>
+                            <td>{{ $s->Date_Sout->format('H\hi') }}</td>
+                            <td>{{ $s->Salle_Sout }}</td>
+                            <td><a href="{{ route('professor.etudiant.show', $s->etudiant_id) }}"><strong>{{ $s->etudiant->full_name }}</strong></a></td>
+                            <td><span class="badge badge-info">{{ \App\Models\professeurs::ROLES[$s->pivot->role] ?? $s->pivot->role }}</span></td>
+                            <td>{{ $s->juryMembers->count() }} membres</td>
+                            <td>
+                                <span class="badge {{ $s->status_badge }}">{{ $s->status }}</span>
+                                @if ($s->Note_finale !== null)
+                                    <br><span class="muted">Finale : {{ number_format($s->Note_finale, 2) }} / 20</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if ($s->Date_Sout->isPast())
+                                    <form method="POST" action="{{ route('professor.soutenances.noter', $s->id) }}" class="note-form">
+                                        @csrf
+                                        <input type="number" name="note" min="0" max="20" step="0.25" value="{{ $s->pivot->note }}" required>
+                                        <input type="text" name="commentaire" value="{{ $s->pivot->commentaire }}" placeholder="Commentaire">
+                                        <button class="btn btn-success btn-sm">{{ $s->pivot->note !== null ? 'Modifier' : 'Noter' }}</button>
+                                    </form>
+                                @else
+                                    <span class="muted">Après la soutenance</span>
+                                @endif
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <tr data-role="encadrant">
-                            <td><strong>28/01/2025</strong></td>
-                            <td>10h00 - 10h45</td>
-                            <td>B102</td>
-                            <td><strong>Ahmed Benali</strong></td>
-                            <td><span class="badge badge-info">Encadrant</span></td>
-                            <td>4 membres</td>
-                        </tr>
-                        <tr data-role="rapporteur">
-                            <td><strong>28/01/2025</strong></td>
-                            <td>14h00 - 14h45</td>
-                            <td>B103</td>
-                            <td><strong>Fatima Alami</strong></td>
-                            <td><span class="badge badge-warning">Rapporteur</span></td>
-                            <td>4 membres</td>
-                        </tr>
-                        <tr data-role="examinateur">
-                            <td><strong>29/01/2025</strong></td>
-                            <td>11h00 - 11h45</td>
-                            <td>A202</td>
-                            <td><strong>Mohammed Tazi</strong></td>
-                            <td><span class="badge badge-info">Examinateur</span></td>
-                            <td>4 membres</td>
-                        </tr>
-                        <tr data-role="encadrant">
-                            <td><strong>30/01/2025</strong></td>
-                            <td>09h00 - 09h45</td>
-                            <td>A201</td>
-                            <td><strong>Youssef Idrissi</strong></td>
-                            <td><span class="badge badge-info">Encadrant</span></td>
-                            <td>4 membres</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </main>
-
-    <script src="{{ asset('js/professeur.js') }}"></script>
-    <script>
-        function filterByRole(role) {
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            const rows = document.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                if (role === 'all') {
-                    row.style.display = '';
-                } else {
-                    row.style.display = row.dataset.role === role ? '' : 'none';
-                }
-            });
-        }
-    </script>
-</body>
-</html>
-
+                    @empty
+                        <tr><td colspan="8" class="empty">Vous ne faites partie d'aucun jury pour le moment.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </section>
+@endsection

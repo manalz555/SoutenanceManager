@@ -1,98 +1,78 @@
 <?php
 
-use App\Http\Controllers\acceuilController;
-use App\Http\Controllers\indexController;
-use App\Http\Controllers\signupController;
-use App\Http\Controllers\etudiantController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\EtudiantController;
 use App\Http\Controllers\ProfessorController;
 use Illuminate\Support\Facades\Route;
 
-// Public routes
-Route::get('/', function () {
-    return view('welcome');
-});
+// ---------------------------------------------------------------- Pages publiques
+Route::view('/', 'acceuil')->name('home');
+Route::redirect('/acceuil', '/');
 
-Route::get('/acceuil', [acceuilController::class, 'acceuil'])->name('home');
-Route::get('/signup', [signupController::class, 'signup'])->name('signup');
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::redirect('/signup', '/login');
+Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Student Authentication Routes
-Route::prefix('etudiant')->group(function () {
-    // Authentication
-    Route::get('/login', [etudiantController::class, 'showLogin'])->name('etudiant.login');
-    Route::post('/login', [etudiantController::class, 'login']);
-    Route::get('/register', [etudiantController::class, 'showRegister'])->name('etudiant.register');
-    Route::post('/register', [etudiantController::class, 'register']);
-    Route::post('/logout', [etudiantController::class, 'logout'])->name('etudiant.logout');
-    
-    // Protected routes (require authentication)
-    Route::middleware(['etudiant.auth'])->group(function () {
-        Route::get('/dashboard', [etudiantController::class, 'dashboard'])->name('etudiant.dashboard');
-        Route::match(['get', 'post'], '/depot', [etudiantController::class, 'depot'])->name('etudiant.depot');
-        Route::get('/remarques', [etudiantController::class, 'remarques'])->name('etudiant.remarques');
-        Route::get('/soutenance', [etudiantController::class, 'soutenance'])->name('etudiant.soutenance');
-        Route::post('/profile/update', [etudiantController::class, 'updateProfile'])->name('etudiant.profile.update');
+// ---------------------------------------------------------------- Espace étudiant
+Route::prefix('etudiant')->name('etudiant.')->group(function () {
+    Route::get('/register', [EtudiantController::class, 'showRegister'])->name('register');
+    Route::post('/register', [EtudiantController::class, 'register']);
+    Route::redirect('/login', '/login?role=etudiant')->name('login');
+
+    Route::middleware('etudiant.auth')->group(function () {
+        Route::get('/dashboard', [EtudiantController::class, 'dashboard'])->name('dashboard');
+        Route::match(['get', 'post'], '/depot', [EtudiantController::class, 'depot'])->name('depot');
+        Route::get('/remarques', [EtudiantController::class, 'remarques'])->name('remarques');
+        Route::post('/remarques/{id}/traiter', [EtudiantController::class, 'traiterRemarque'])->name('remarques.traiter');
+        Route::get('/soutenance', [EtudiantController::class, 'soutenance'])->name('soutenance');
+        Route::post('/profile/update', [EtudiantController::class, 'updateProfile'])->name('profile.update');
     });
 });
 
-// Admin Authentication Routes
-Route::prefix('admin')->group(function () {
-    // Authentication
-    Route::get('/login', [AdminController::class, 'showLogin'])->name('admin.login');
-    Route::post('/login', [AdminController::class, 'login']);
-    
-    // Protected routes (require admin authentication)
-    Route::middleware(['admin'])->group(function () {
-        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-        Route::post('/logout', [AdminController::class, 'logout'])->name('admin.logout');
-        
-        // Gestion des étudiants
-        Route::get('/etudiants', [AdminController::class, 'students'])->name('admin.students');
-        Route::get('/etudiants/create', [AdminController::class, 'createStudent'])->name('admin.students.create');
-        Route::post('/etudiants', [AdminController::class, 'storeStudent'])->name('admin.students.store');
-        Route::get('/etudiants/{id}', [AdminController::class, 'showStudent'])->name('admin.students.show');
-        
-        // Gestion des professeurs
-        Route::get('/professeurs', [AdminController::class, 'teachers'])->name('admin.teachers');
-        Route::get('/professeurs/create', [AdminController::class, 'createTeacher'])->name('admin.teachers.create');
-        Route::post('/professeurs', [AdminController::class, 'storeTeacher'])->name('admin.teachers.store');
-        
-        // Gestion des soutenances
-        Route::get('/soutenances', [AdminController::class, 'defenses'])->name('admin.defenses');
-        Route::get('/soutenances/create', [AdminController::class, 'createDefense'])->name('admin.defenses.create');
-        Route::post('/soutenances', [AdminController::class, 'storeDefense'])->name('admin.defenses.store');
-        Route::get('/soutenances/{id}', [AdminController::class, 'showDefense'])->name('admin.defenses.show');
+// ---------------------------------------------------------------- Espace administrateur
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::redirect('/login', '/login?role=admin')->name('login');
+
+    Route::middleware('admin')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
+        Route::get('/etudiants', [AdminController::class, 'students'])->name('students');
+        Route::post('/etudiants', [AdminController::class, 'storeStudent'])->name('students.store');
+        Route::delete('/etudiants/{id}', [AdminController::class, 'destroyStudent'])->name('students.destroy');
+
+        Route::get('/professeurs', [AdminController::class, 'teachers'])->name('teachers');
+        Route::post('/professeurs', [AdminController::class, 'storeTeacher'])->name('teachers.store');
+        Route::delete('/professeurs/{id}', [AdminController::class, 'destroyTeacher'])->name('teachers.destroy');
+
+        Route::get('/assignations', [AdminController::class, 'assignations'])->name('assignations');
+        Route::post('/assignations/{id}', [AdminController::class, 'updateAssignation'])->name('assignations.update');
+
+        Route::get('/validation', [AdminController::class, 'validation'])->name('validation');
+        Route::post('/documents/{id}/valider', [AdminController::class, 'validerDocument'])->name('documents.valider');
+        Route::post('/documents/{id}/rejeter', [AdminController::class, 'rejeterDocument'])->name('documents.rejeter');
+
+        Route::get('/soutenances', [AdminController::class, 'defenses'])->name('defenses');
+        Route::get('/soutenances/planifier', [AdminController::class, 'createDefense'])->name('defenses.create');
+        Route::post('/soutenances', [AdminController::class, 'storeDefense'])->name('defenses.store');
+        Route::get('/soutenances/{id}', [AdminController::class, 'showDefense'])->name('defenses.show');
+        Route::delete('/soutenances/{id}', [AdminController::class, 'destroyDefense'])->name('defenses.destroy');
     });
 });
 
-// Professor Authentication Routes
-Route::prefix('professeur')->group(function () {
-    // Authentication
-    Route::get('/login', [ProfessorController::class, 'showLogin'])->name('professor.login');
-    Route::post('/login', [ProfessorController::class, 'login']);
-    
-    // Protected routes (require professor authentication)
-    Route::middleware(['professor'])->group(function () {
-        Route::get('/dashboard', [ProfessorController::class, 'dashboard'])->name('professor.dashboard');
-        Route::post('/logout', [ProfessorController::class, 'logout'])->name('professor.logout');
-        
-        // Gestion des étudiants encadrés
-        Route::get('/etudiants/{id}', [ProfessorController::class, 'showEtudiant'])->name('professor.etudiant.show');
-        
-        // Gestion des documents
-        Route::get('/etudiants/{etudiantId}/documents/{documentId}', [ProfessorController::class, 'showDocument'])
-            ->name('professor.documents.show');
-            
-        // Gestion des remarques
-        Route::post('/etudiants/{etudiantId}/remarques', [ProfessorController::class, 'addRemarque'])
-            ->name('professor.remarques.store');
-            
-        // Validation des documents
-        Route::post('/documents/{documentId}/valider', [ProfessorController::class, 'validerDocument'])
-            ->name('professor.documents.valider');
-            
-        // Notation des soutenances
-        Route::post('/soutenances/{soutenanceId}/noter', [ProfessorController::class, 'noterSoutenance'])
-            ->name('professor.soutenances.noter');
+// ---------------------------------------------------------------- Espace professeur
+Route::prefix('professeur')->name('professor.')->group(function () {
+    Route::redirect('/login', '/login?role=professeur')->name('login');
+
+    Route::middleware('professor')->group(function () {
+        Route::get('/dashboard', [ProfessorController::class, 'dashboard'])->name('dashboard');
+        Route::get('/etudiants', [ProfessorController::class, 'etudiants'])->name('etudiants');
+        Route::get('/etudiants/{id}', [ProfessorController::class, 'showEtudiant'])->name('etudiant.show');
+        Route::get('/etudiants/{etudiantId}/documents/{documentId}', [ProfessorController::class, 'showDocument'])->name('documents.show');
+        Route::post('/etudiants/{etudiantId}/remarques', [ProfessorController::class, 'addRemarque'])->name('remarques.store');
+        Route::post('/documents/{documentId}/valider', [ProfessorController::class, 'validerDocument'])->name('documents.valider');
+        Route::get('/planning', [ProfessorController::class, 'planning'])->name('planning');
+        Route::post('/soutenances/{soutenanceId}/noter', [ProfessorController::class, 'noterSoutenance'])->name('soutenances.noter');
     });
 });
